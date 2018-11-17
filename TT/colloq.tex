@@ -1,0 +1,78 @@
+\documentclass[10pt,a4paper,oneside]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cmll}
+\usepackage{enumerate}
+\usepackage{stmaryrd}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{url}
+
+\theoremstyle{plain}
+\newtheorem*{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}[section]
+
+\theoremstyle{defenition}
+\newtheorem*{defenition}{Определение}
+
+\begin{document}
+
+\section{Бестиповое лямбда-исчисление. Общие определения (альфа-эквивалентность, бета-редукция, бета-эквивалентность). Параллельная бета-редукция. Теорема Чёрча-Россера.}
+\begin{defenition}
+	$A=_{\alpha}B$
+	\begin{enumerate}
+		\item $A\equiv x \wedge B\equiv y \wedge x\equiv y$
+		\item $A\equiv P_1 Q_1 \wedge B\equiv P_2 Q_2 \wedge P_1=_{\alpha}P_2 \wedge Q_1=_{\alpha}Q_2$
+		\item $A\equiv\lambda x.P \wedge B\equiv\lambda y.Q \wedge P[x\colon=t]=_{\alpha}Q[y\colon=t]$
+	\end{enumerate}
+\end{defenition}
+
+\begin{defenition}
+	$A\to_{\beta}B$
+	\begin{enumerate}
+		\item $A\equiv P_1 Q_1 \wedge B\equiv P_2 Q_2$
+		
+		      $P_1=_{\alpha}P_2 \wedge Q_1\to_{\beta}Q_2$
+		      или
+		      $P_1\to_{\beta}P_2 \wedge Q_1=_{\alpha}Q_2$
+		\item $A\equiv(\lambda x.P) Q \wedge B\equiv P[x\colon=Q]$
+	\end{enumerate}
+\end{defenition}
+
+\begin{defenition}
+	$A=_{\beta}B$ --- рефлексивное, транзитивное, симметричное замыкание $\to_{\beta}$.
+\end{defenition}
+
+\begin{defenition}
+	$A\rightrightarrows_{\beta}B$
+	\begin{enumerate}
+		\item $A=_{\alpha}B$
+		\item $A\equiv P_1 Q_1 \wedge B\equiv P_2 Q_2 \wedge P_1\rightrightarrows_{\beta}P_2 \wedge Q_1\rightrightarrows_{\beta}Q_2$
+		\item $A=_{\alpha}(\lambda x.P) Q \wedge B=_{\alpha}P[x\colon=Q]$
+	\end{enumerate}
+\end{defenition}
+
+\begin{theorem}[Чёрча--Россера]
+	$\twoheadrightarrow_{\beta}$ обладает ромбовидным свойством.
+\end{theorem}
+
+\section{Булевские значения, чёрчевские нумералы, упорядоченные пары}
+
+$T\equiv\lambda a.\lambda b.a$
+
+$F\equiv\lambda a.\lambda b.b$
+
+$If\equiv\lambda c.\lambda t.\lambda e.(c t) e$
+
+$\overline{n}\equiv\lambda f.\lambda x.f^{(n)} x$
+
+$(+1)\equiv\lambda n.\lambda f.\lambda x.n f (f x)$
+
+$makePair\equiv\lambda a.\lambda b.\lambda s.s a b$
+
+$First\equiv\lambda p.p T$
+
+$Second\equiv\lambda p.p F$
+\end{document}
