@@ -455,9 +455,164 @@ $$
 \end{defenition}
 
 \subsubsection{Правильное исполнение} 
+\begin{itemize}
+	\item $H|_p$ --- сужение исполнения на поток $P$, то есть исполнение, где остались только операции, происходящие в потоке $P$.
+	\item \begin{defenition}
+		Исполнение называется {\bfseries правильным (well-formed)}, если его сужение на каждый поток $P$ является последовательным (рисунок~\ref{fig:model6}).
+	\end{defenition} 
+\end{itemize}
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Model6}
+	\caption{Правильное исполнение}
+	\label{fig:model6}
+\end{figure}
 
+\subsubsection{Правильное исполнение и нотация}
+\begin{itemize}
+	\item $H|_p$ --- сужение исполнения на поток $P$ --- это множестов всех операций $e\in H$, таких что $proc(e)=P$.
+	\begin{itemize}
+		\item Исполнение называется {\bfseries правильным (well-formed)}, если его сужение на каждый поток $P$ является последовательным.
+		\item Задается программой, которую выполняет поток.
+		\item \begin{defenition}
+			Объединение всех сужений на потоки называют {\bfseries пргораммным порядком} (po = program order).
+		\end{defenition}
+	    \item Нас интерисуют только правильные исполнения.
+	\end{itemize}
+    \item $H|_x$ --- сужение истории на объект $x$ --- это множество операций $e\in H$, таких что $obj(e)=x$. В правильном исполнении сужение на объект е обязательно является последовательным.
+\end{itemize}
+
+\subsubsection{Последовательная спецификация объекта}
+Если сужение исполнения на объект $H|_x$ является последовательным, то можно проверить его на соответсвие {\bfseries последовательной спецификации объекта}.
+
+\subsubsection{Допустимое последовательное исполнение}
+\begin{defenition}
+	Последовательное исполнение является {\bfseries допустимым (legal)}, если выполнены последовательные спецификации всех объектов (рисунок~\ref{fig:model7}).
+\end{defenition}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Model7}
+	\caption{Допустимое исполнение}
+	\label{fig:model7}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Model8}
+	\caption{Недопустимое исполнение}
+	\label{fig:model8}
+\end{figure}
+
+\subsubsection{Условия согласованности (корректности)}
+{\bfseries Корректные} последовательные программы должны считаться {\bfseries согласованными}.
+
+Условия согласованности:
+\begin{itemize}
+	\item Согласованность при покое
+	\item Последовательная согласованность
+	\item Лианеризуемость
+	\item и другие
+\end{itemize}
+
+\paragraph{Последовательная согласованность}
+\begin{defenition}
+	Исполнение {\bfseries последовательно согласованно}, если ему можно сопоставить эквивалентное ему допустимое исполнение, сохраняющее его программный порядок (рисунок~\ref{fig:model9}).
+\end{defenition}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Model9}
+	\caption{Последовательно согласованно}
+	\label{fig:model9}
+\end{figure}
+
+Последовательная согласованность на каждом объекте исполнения не влечет последовательную согласованость всего исполнения (рисунок~\ref{fig:model10})
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.7\linewidth]{pictures/Model10}
+	\caption{}
+	\label{fig:model10}
+\end{figure}
+
+Модель памяти языков программрования и системы исполнения кода используют последовательную согласованность для своих формулировок.
+
+\paragraph{Лианеризуемость}
+\begin{defenition}
+	Исполнение {\bfseries лианеризуемо}, если можно сопоставить эквивалентное ему допустимое последовательное исполнение, которое сохраняет отношение <<произошло до>>. 
+\end{defenition}
+
+Свойства лианеризуемости:
+\begin{itemize}
+	\item В лианеризуемом исполнении каждой операции $e$ можно сопоставить точку глобального времени ({\bfseries точку лианеризации}) $t(e)\in\mathbb{R}$ так, что время различных операций различно и
+	$$
+	e\to f\Rightarrow t(e)<t(f)
+	$$
+	\item Лианеризуемость {\bfseries локальна}. Лианеризуемость исполнения на каждом объекте эквивалентна лианеризуемости системы целиком.
+	\item \begin{defenition}
+		Операции над лианеризуемыми объектами называют {\bfseries атомарными}.
+	\end{defenition}
+\end{itemize}
+
+\paragraph{Лианеризуемость в глобальном времени}
+
+В глобальном времени исполнение лианеризуемо тогда и только тогда, когда точки лианеризуемости можно выбрать так, что
+$$
+\forall e\colon t_{inv}(e)<t(e)<t_{res}(e)
+$$
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Model11}
+	\caption{Лианеризуемость}
+	\label{fig:model11}
+\end{figure}
+
+\subsection{Лианеризуемость}
+Исполнение системы, выполняющей операции над лианеризуемыми объектами, можно анализировать в модели чередования.
+
+Из более простых лианеризуемых объектов можно сделать лианеризуемые объекты более высокого уровня. 
+
+Когда говорят, что объект безопасен для использования из нескольких потоков, подразумевают, что операции над ним лианеризуемы.
+
+\subsubsection{Применительо к Java}
+\begin{itemize}
+	\item Все операции над volatile полями в Java, согласно JMM, являются операциями синхронизации, которые всегда линейно--упорядочены в любом исполнении и соглосованы с точки зрения чтения/записи.
+	\item Но операции над не volatile полями могут нарушать не только лианеризуемость, но даже последовательную согласованность, при отсутствии синхронизации.
+	\item Если программа корректно синхронизированна, то JMM дает гарантию последовательно согласованного исполнения всего кода. 
+\end{itemize}
 
 \section{Построение атомарных объектов и блокировки}
+\subsection{Сложные и составные операции}
+\subsubsection{Формализация сложных операций}
+\begin{itemize}
+	\item Операция $e\in H$ может быть сложной. Даже чтение из памяти это продолжительное по времени действие, много шагов.
+	\item {\bfseries Событие}
+	\begin{itemize}
+		\item Неделимое, простое физическое действие
+		\item Множество событий обозначим $G$
+		\item Каждая операция это множество событий $e\subset G$
+	\end{itemize}
+    \item Из всех событий выделяют два наиболее важных
+    \begin{itemize}
+    	\item Вызов операции $inv(e)\in G$
+    	\item Завершение операции $res(e)\in G$
+    \end{itemize}
+    \item Декомпозиция исполнения --- ($H$, $G$, $\to_G$, inv, res)
+    \begin{itemize}
+    	\item $H$ --- это множество операций ($\forall e\in H\colon e\subset G$)
+    	\item $G$ --- это множество событий
+    	\item $\to_G$ --- отношение <<произошло до>> на событиях из $G$.
+    	\item inv, res --- фукции из $H$ в $G$, такие что:
+    	$$
+    	\forall e\in H\colon inv(e)\to_Gres(e)
+    	$$
+    	$$
+    	\forall e\in H, g\in e, g\ne inv(e), g\ne res(e)\colon inv(e)\to_Gg\to_Gres(e)
+    	$$
+    \end{itemize}
+\end{itemize}
 
 \section{Consensus}
 \subsection{Задача о консенсусе}
@@ -500,6 +655,168 @@ $$
 	\item Отсутствие ожидания --- если поток хочет выполнить операцию, то он выполнит ее за конечное время независимо от других потоков
 \end{itemize}
 
+\section{Практические построения на списках}
+
+\subsection{МНожество на односвязном списке}
+
+\begin{lstlisting}
+interface Set{
+   fun add(key: Int)
+   fun contains(key: Int): Boolean
+   fun remove(key: Int)
+}
+\end{lstlisting}
+
+Элементы упорядочены по возрастанию (рисунок~\ref{fig:set1}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Set1}
+	\caption{Односвязный список}
+	\label{fig:set1}
+\end{figure}
+
+Пустой список состоит из двух граничных элементов (рисунок~\ref{fig:set2}).
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Set2}
+	\caption{Пустой список}
+	\label{fig:set2}
+\end{figure}
+
+\subsubsection{Алгоритм}
+
+\begin{itemize}
+	\item Элементы упорядочены по возрастанию
+	\item Ищем окно $(cur, next)$, что $cur.KEY<key\leqslant next.KEY$ и $cur.N=next$
+	\item Искомый элемент будет в $next$
+	\item Новый элемент добавляем между $cur$ и $next$
+\end{itemize}
+
+\subsubsection{Псевдокод}
+
+\lstinputlisting{SetEasy.kt}
+
+\subsubsection{Проблема}
+
+При параллельном удалении соседних элементов могут возникнуть проблемы с перенаправление ссылок: например, мы успели удалить $cur$ перед тем как переназначить ссылки и у нас взникнет NullPointerException или список просто разорвется
+
+\subsection{Грубая синхронизация}
+
+\begin{itemize}
+	\item Coarse-grained locking
+	\item Используем общую блокировку для всех операций
+	\item $\Rightarrow$ обеспечиваем последовательное исполнение
+	\item В Java для этого можно использовать synchronized и java.utils.concurrent.locks.ReentrantLock
+\end{itemize}
+
+\subsection{Тонкая блокировка}
+
+\begin{itemize}
+	\item Fine-Grained locking
+	\item Своя блокировка на каждый элемент
+	\item При поиске окна держим блокировку на текущий и следующий элемент
+\end{itemize}
+
+\subsubsection{Корректность}
+
+\begin{itemize}
+	\item Поиск окна: запись и чтение $cur.N$ не может происходить параллельно
+	\item Модификация: во время изменения окно защищено блокировкой $\Rightarrow$ атомарно
+	\item $\forall k$: операции с ключем $k$ лианеризуемы $\Rightarrow$ всё исполнение лианеризуемо
+	\item Операции с ключем $k$ упорядочены взятием блокировки
+\end{itemize}
+
+\subsection{Оптимистичная синхронизация}
+
+\subsubsection{Алгоритм абстрактной операции}
+
+\begin{enumerate}
+	\item Найти окно $(cur, next)$ без синхронизации
+	\item Взять блокировки на $cur$ и $next$
+	\item Проверит инвариант $cur.N=next$
+	\item Проверить, что $cur$ не удалён
+	\item Выполнить операцию
+	\item При любой ошибке начать занаво
+\end{enumerate}
+
+\subsubsection{Проверка, что узел не удалён}
+
+\begin{itemize}
+	\item Держи блокировку на $cur$ и $cur$ удалён $\Rightarrow$ не увидим при проходе
+	\item Попробуем найти $cur$ ещё раз за $O(n)$ и проверим, что $cur.N=next$
+\end{itemize}
+
+\subsubsection{Валидация окна}
+
+\begin{lstlisting}
+fun validate(cur: Node, next: Node): Boolean {
+    node := head
+    while (node.key < cur.key) {
+        node = node.N
+    }    
+    return (cur, next) = (node, node.N)
+}
+\end{lstlisting}
+
+\subsubsection{Корректность}
+
+\begin{itemize}
+	\item Поиск: запись и чтение $cur.N$ связаны отношением <<произошло до>>
+	\item Можем говорить о лианеризуемости операция над одинаковыми ключами
+	\item Точка лианеризации - взятие блокировки над $cur$
+\end{itemize}
+
+\subsection{Ленивая синхронизация}
+
+\subsubsection{Идея ленивого удаления}
+
+\begin{itemize}
+	\item Добавим в Node поле removed типа Boolean
+	\item Удаление в две фазы
+	      \begin{enumerate}
+	      	\item $node.removed=true$ --- логическое удаление
+	      	\item Физическое удаление из списка
+	      \end{enumerate}
+    \item Инвариант: все не удалённые вершины в списке
+    \item $\Rightarrow$ теперь не над проходить по всему списку в validate()
+\end{itemize}
+
+\subsubsection{Псевдокод}
+
+\begin{lstlisting}
+fun validate(cur: Node, next: Node): Boolean {
+    return !cur.removed && !next.removed && cur.N=next
+}
+\end{lstlisting}
+
+\subsection{Неблокирующая синхронизация}
+
+\subsubsection{Неблокирующий поиск}
+
+\begin{itemize}
+	\item На момент чтения поля $N$ видим состояние на момент записи $N$ или новее
+	\item $\Rightarrow$ можем не брать блокиовку при поиске
+\end{itemize}
+
+\begin{lstlisting}
+fun contains(key: Int): Boolean {
+    (cur, next) := findWindow(key)
+    return next.key = key
+}
+\end{lstlisting}
+
+\subsubsection{Неблокирующая модификация}
+
+\begin{itemize}
+	\item Объединим N и removed в одну переменную, пару $(N, removed)$
+	\item Будем менять $(N, removed)$ атомарно
+	\item Каждая операция модификации будет выполняться одни успешным CAS-ом
+	\item В Java для этого есть AtomicMarkableReference
+\end{itemize}
+
+
 \section{CASN}
 \subsection{Списки против массивов}
 \begin{itemize}
@@ -534,5 +851,63 @@ fun <A,B> dcss(
 \subsection{Наблюдения и замечания}
 
 \subsection{Подход к реализации}
+
+\section{Мониторы и ожидание}
+\subsection{Объекты как функции}
+\begin{itemize}
+	\item Операция над объектом как функция
+	\item Ранее опеарции были всюду определены на паре (S, P)
+\end{itemize}
+
+\subsection{Очередь ограниченного размера с ожиданием}
+
+\subsection{Лианеризуемость операций с ожиданием}
+\begin{itemize}
+	\item Расширим понятие исполнения
+	\begin{itemize}
+		\item Есть событие вызова inv(A)
+		\item Но не обязателен ответ resp(A)
+		\begin{itemize}
+			\item\begin{defenition}
+				A это {\bfseries незавершенная} операция, если нет resp(A)
+			\end{defenition}
+		\end{itemize}
+	\end{itemize}
+\end{itemize}
+
+\subsection{Реализация через монитор}
+Monitor = mutex + conditional variables
+\begin{itemize}
+	
+	\item
+\end{itemize}
+
+\subsection{Монитор в Java}
+В Java каждый объект имеет монитор с одной условной переменной
+
+В некотрых сстемах wait() реализован как хэш-таблица, при чем при коллизии кого-нибудь разбудим.
+
+Wait() и notify() можно использовать только внутри критической секции (в synchronized)
+
+Так как в мониторе только одна условная переменная, то, если у нас есть потоки ожидающие разных событий, то мы не можем использовать метод notify(), так как мы можем разбудить не тот поток.
+
+\subsection{ReentrantLock}
+
+\subsection{Подробней про interrupt}
+
+\subsection{Ожидание без блокировки}
+
+\section{Железо и спин-локи}
+Так как у каждого ядра есть кэш, то он читает значение не и глобальной памяти, а из кэша, что ломает нам многопоточность. Решение - протокол MESI
+
+\subsection{Backoff}
+delay() - рандомизированный, т.к. если если несколько потоков ломанулись в блокировку и одному повезло, то он иожет очень быстро выполнить операцию и без делэя все остальные потоки снова ломанутся, это будет плохо, а если будет рандомищированный делэй, то кому-то из потоков повезет и он будет маленькое количество времени спать, и быстро схватит блокировку. Это очень важно, если у нас короткая блокировка.
+
+Но этот алгоритм был нечестным, так как поток мог прийти последним и получить блокировку первым.
+
+Напишем алгоритм с fist-come-first-served : CLH Lock
+
+Isolation - пока транзакция работает, дригие не должны видеть несогласованный результат
+Consistency - струдники не исчезают
 
 \end{document}
