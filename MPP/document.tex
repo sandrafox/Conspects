@@ -362,6 +362,7 @@ $$
 \end{itemize}
 
 \subsection{Модель глобального времени}
+
 В этой моделе каждая операция --- это временный интервал (рисунок~\ref{fig:model3}) $e=[t_{inv}(e), t_{res}(e)]$ где $t_{inv}(e), t_{res}(e)\in\mathbb{R}$ и
 $$
 e\to f\stackrel{\mathrm{def}}{=}t_{res}(e)<t_{inv}(f)
@@ -816,6 +817,145 @@ fun contains(key: Int): Boolean {
 	\item В Java для этого есть AtomicMarkableReference
 \end{itemize}
 
+\section{Lock-free хеш таблица с открытой адресацией}
+
+\subsection{ConcurrentHashMap}
+
+\begin{itemize}
+	\item Работает за $O(1)$ в среднем
+	\item Использует внутри блокировки $\Rightarrow$ не так хорошо масштабируется
+	\item Хранит списки при коллизии (рисунок~\ref{fig:concurrenthashmap1})
+	\begin{itemize}
+		\item $\Rightarrow$ лишние cache miss-ы
+		\item зато может хранить дерево при постоянных коллизиях (рисунок~\ref{fig:concurrenthashmap2})
+	\end{itemize}
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/ConcurrentHashMap1}
+	\caption{Simple ConcureentHashMap}
+	\label{fig:concurrenthashmap1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/ConcurrentHashMap2}
+	\caption{ConcurrentHashMap with tree}
+	\label{fig:concurrenthashmap2}
+\end{figure}
+
+\subsection{Skip List}
+
+\begin{itemize}
+	\item Работает за $O(\log(n))$ в среднем
+	\item <<Дерево>> списков
+	\begin{itemize}
+		\item Много лишних объектов
+		\item $\Rightarrow$ постоянные cache miss-ы и нагружает GC 
+	\end{itemize}
+    \item И вообще это не хеш таблица
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/SkipList}
+	\caption{Skip List}
+	\label{fig:skiplist}
+\end{figure}
+
+\subsection{Потенциальные проблемы}
+\begin{itemize}
+	\item ConcurrentHashMap
+	\begin{itemize}
+		\item Использует внутри блокировки $\Rightarrow$ не lock-free\footnote{Это важно для высоконагруженных систем}
+		\item Использует списки $\Rightarrow$ cache miss-ы
+	\end{itemize}
+    \item Много <<лишних>> объектов
+    \item Постоянные cache miss-ы
+\end{itemize}
+
+\subsection{NonBlockingHashMap}
+
+\begin{itemize}
+	\item Использует открытую адресацию
+	\item Lock-free
+	\begin{itemize}
+		\item Гарантирует, что система не стоит на месте даже при неудачном scheduling-е
+		\item Можно вставлять читать во время перехеширования
+	\end{itemize}
+\end{itemize}
+
+\begin{lstlisting}
+public T getInternal(long key) {
+    int i = index(key);
+    long k;
+    int probes = 0;
+    while ((k = keys.get(i)) != key) {
+        if (k == NULL_KEY) 
+            return null;
+        if (++probes >= MAX_PROBES)
+            return null;
+        if (i == 0) 
+           i = length;
+        i--;
+    }
+    return values.get(i);
+}
+\end{lstlisting}
+
+\subsubsection{Пара деталей}
+
+\begin{itemize}
+	\item Теория говорит, что размер таблицы должен быть простым числом, но так как операция взятия по модулю дорогая, то на практике используется степени двойки, для которых требуется только сдвиг
+	\item В теории при поиске элемента лучше смотреть не на следующий элемент, но на практике наоборот, так как следующий уже скорее всего закэширован  
+\end{itemize}
+
+\subsection{MRSW хеш таблица (рисунок~\ref{fig:element1})}
+
+Увеличение в случае одного писателя:
+\begin{enumerate}
+	\item Создаем новую таблицу
+	\item Копируем элементы
+	\item Меняем ссылку на таблицу
+\end{enumerate}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Element1}
+	\caption{Простая жизнь ячейки}
+	\label{fig:element1}
+\end{figure}
+
+\subsection{MRMW хеш таблица}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Element2}
+	\caption{Жизнь ячейки без переноса}
+	\label{fig:element2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Element3}
+	\caption{Жизнь ячейки с переносом}
+	\label{fig:element3}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Element4}
+	\caption{Другой взгляд на перенос}
+	\label{fig:element4}
+\end{figure}
+
+\subsubsection{Кооперация при переносе}
+
+\begin{itemize}
+	\item Переносить блоками по k элементов
+	\item Переносом занимается один выделенный поток
+\end{itemize}
 
 \section{CASN}
 \subsection{Списки против массивов}
@@ -832,6 +972,8 @@ fun contains(key: Int): Boolean {
     	\item Для добавления нужно CAS2 (для size и элемента) --- эта операция не поддерживается на процессорах
     \end{itemize}
 \end{itemize}
+
+
 
 \subsection{CASn}
 
