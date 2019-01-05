@@ -960,39 +960,330 @@ public T getInternal(long key) {
 \section{CASN}
 \subsection{Списки против массивов}
 \begin{itemize}
-	\item Список
+	\item Список (рисунок~\ref{fig:list})
 	\begin{itemize}
-		\item $3*N$ слов памяти (минимум)
-		\item при многопотном использовании хватает одного CAS для добавления элемента
+		\item $3*N$ слов памяти (минимум) (рисунок~\ref{fig:list1})
+		\item при многопотном использовании хватает одного CAS для добавления элемента (рисунок~\ref{fig:list2})
 	\end{itemize}
-    \item Массив
+    \item Массив (рисунок~\ref{fig:array})
     \begin{itemize}
-    	\item $5+N$ слов памяти (до $5+2*N$ при х2 резерве)
+    	\item $5+N$ слов памяти (до $5+2*N$ при х2 резерве) (рисунок~\ref{fig:array1})
     	\item Как минимум в два раз быстрее работает с памятью (обычно растет на попрядок) (при однопоточной работе)
-    	\item Для добавления нужно CAS2 (для size и элемента) --- эта операция не поддерживается на процессорах
+    	\item Для добавления нужно CAS2 (для size и элемента) --- эта операция не поддерживается на процессорах (рисунок~\ref{fig:array2})
     \end{itemize}
 \end{itemize}
 
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.05\linewidth]{pictures/List}
+	\caption{Список}
+	\label{fig:list}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.05\linewidth]{pictures/Array}
+	\caption{Массив}
+	\label{fig:array}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.2\linewidth]{pictures/List1}
+	\caption{}
+	\label{fig:list1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.1\linewidth]{pictures/Array1}
+	\caption{}
+	\label{fig:array1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.2\linewidth]{pictures/List2}
+	\caption{Стек на списке}
+	\label{fig:list2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Array2}
+	\caption{Стек на массиве}
+	\label{fig:array2}
+\end{figure}
 
 
 \subsection{CASn}
 
 \begin{lstlisting}
 class Ref<T>(intial: T) {
-   var _v
-   \\...
+   var _v = atomic<Any?>(initial)
+   
+   var value: T
+       get() {
+          return _v as T //TODO
+       }
+       
+       set(upd) {
+           this._v = upd //TODO
+       }
+}
 \end{lstlisting}
 
 \subsubsection{DCSS}
 
+\begin{enumerate}
+	\item Рисунок \ref{fig:dcss1}
+    \item Рисунок \ref{fig:dcss2}
+    \item Рисунок \ref{fig:dcss3}
+    \item Рисунок \ref{fig:dcss4}
+    \item Рисунок \ref{fig:dcss5}
+    \item Рисунок \ref{fig:dcss6}
+\end{enumerate}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS1}
+	\caption{init descriptor}
+	\label{fig:dcss1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS2}
+	\caption{prepare}
+	\label{fig:dcss2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS3}
+	\caption{read b.value}
+	\label{fig:dcss3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS4}
+	\caption{complete when success}
+	\label{fig:dcss4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS5}
+	\caption{complete (alternative)}
+	\label{fig:dcss5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSS6}
+	\caption{compete when failed}
+	\label{fig:dcss6}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/DCSS7}
+	\caption{DCSS all}
+	\label{fig:dcss7}
+\end{figure}
+
+\paragraph{Псевдокод}
+
 \begin{lstlisting}
 fun <A,B> dcss(
-    a: Ref
+    a: Ref<A>, expectA: A, updateA: A,
+    b: Ref<B>, expectB: B) =
+    atomic {
+        if (a.value == expectA && b.value == expectB) {
+            a.value = updateA
+        }
+    }
 \end{lstlisting}
 
 \subsection{Наблюдения и замечания}
 
+\begin{itemize}
+	\item complete работает без циклов
+	\subitem Реализует state machine кторая идёт только вперёд
+	\item Но есть циклы помощи другим потокам
+	\subitem Алгоритм lock-free
+	\item Адреса A \& B должны быть упорядочены
+	\subitem Либо может переполниться стек при помощи
+	\item Один из способов: Restricted DCSS (RDCSS)
+	\subitem A и B берутся из разных "регионов" (не пересекающихся) 
+\end{itemize}
+
 \subsection{Подход к реализации}
+
+\begin{lstlisting}
+abstract class Descriptor {
+    abstract fun complete()
+}
+
+class Ref<T>(initial: T) {
+    var _v = atomic<Any?>(initial)
+    
+    var value: T
+        get() {
+            _v.loop{ cur -> 
+                when(cur) {
+                    is Descriptor -> cur.complete()
+                    else -> return cur
+                }
+            }
+        }
+        
+        set(upd) {
+            _v.loop{ cur ->
+                when(cur) {
+                    is Descriptor -> cur.complete()
+                    else -> if (_v.compareAndSet(cur, upd))
+                        return
+                }
+            }
+        }
+}
+
+class RDCSSDescriptor<A, B>(val a: Ref<A>, val expectA: A, val updateA: A, val b: Ref<B>, val expectB: B): Descriptor() {
+    override fun complete() {
+        val update = if (b.value == expectB) updateA else expectA
+        a._v.compareAndSet(this, update)
+    }
+}
+\end{lstlisting}
+
+\subsection{DCSS Mod}
+
+\begin{enumerate}
+	\item Рисунок \ref{fig:dcssm1}
+	\item Рисунок \ref{fig:dcssm2}
+	\item Рисунок \ref{fig:dcssm3}
+	\item Рисунок \ref{fig:dcssm4}
+	\item Рисунок \ref{fig:dcssm5}
+\end{enumerate}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSSM1}
+	\caption{init state}
+	\label{fig:dcssm1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSSM2}
+	\caption{prepare}
+	\label{fig:dcssm2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSSM3}
+	\caption{read b.value}
+	\label{fig:dcssm3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSSM4}
+	\caption{reach consensus}
+	\label{fig:dcssm4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/DCSSM5}
+	\caption{complete}
+	\label{fig:dcssm5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/DCSSM6}
+	\caption{all states}
+	\label{fig:dcssm6}
+\end{figure}
+
+\subsection{CASN}
+
+\subsubsection{Псевдокод CAS2}
+
+\begin{lstlisting}
+fun <A,B> cas2(a: Ref<A>, expectA: A, updateA: A, b: Ref<B>, expectB: B, updateB: B): Boolean = atomic {
+    if (a.value == expectA && b.value == expectB) {
+        a.value = updateA
+        b.value = updateB
+        true
+    } else {
+        false
+    }
+}
+\end{lstlisting}
+
+\begin{enumerate}
+	\item Рисунок \ref{fig:casn1}
+	\item Рисунок \ref{fig:casn2}
+	\item Рисунок \ref{fig:casn3}
+	\item Рисунок \ref{fig:casn4}
+	\item Рисунок \ref{fig:casn5}
+	\item Рисунок \ref{fig:casn6}
+\end{enumerate}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN1}
+	\caption{init descriptor}
+	\label{fig:casn1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN2}
+	\caption{prepare(1)}
+	\label{fig:casn2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN3}
+	\caption{prepare(2)}
+	\label{fig:casn3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN4}
+	\caption{decide}
+	\label{fig:casn4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN5}
+	\caption{complete(1)}
+	\label{fig:casn5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CASN6}
+	\caption{complete(2)}
+	\label{fig:casn6}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/CASN7}
+	\caption{all states}
+	\label{fig:casn7}
+\end{figure}
+
 
 \section{Мониторы и ожидание}
 \subsection{Объекты как функции}
