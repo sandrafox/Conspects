@@ -1,0 +1,209 @@
+\documentclass[10pt,a4paper,oneside,titlepage]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cmll}
+\usepackage{enumerate}
+\usepackage{stmaryrd}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{url}
+\usepackage{listingsutf8}
+\usepackage{graphicx}
+\graphicspath{{pictures/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\title{Конспект по курсу: Теория вероятности и математическая статистика \thanks{читаемый Суслиной Ириной Александровной в 2018-2019 годах}}
+\author{Александра Лисицына \thanks{студентка группы М3334}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Теорема}
+\newtheorem{lemma}{Лемма}
+\newtheorem{predl}{Утверждение}
+
+\theoremstyle{defenition}
+\newtheorem{defenition}{Определение}[section]
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Замечание}
+\newtheorem*{example}{Пример}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\clearpage
+
+\chapter{Введение в теорию вероятностей}
+
+\section{Введение}
+
+\begin{defenition}
+	{\bfseries Вероятностное пространство} --- стандартная модель теории вероятности $(\Omega, \Sigma, P)$.
+\end{defenition}
+
+\begin{defenition}
+	{\bfseries Случайный эксперимент}(испытание) --- первичное понятие. Может быть повторён в идентичных условиях любое число раз. Результат эксперимента --- {\bfseries элементарный исход}.
+	
+	В результате эксперимента происходит один и только один исход. 
+\end{defenition}
+
+\begin{enumerate}
+	\item [\textbf{Examples}]
+	\item Случайное двукратное бросание монеты
+	$\Omega=$\{ГГ, ГР, РГ, РР\} 
+	\item Случайное извленчение двух карт из колоды в 36 карт. Порядок не важен
+	$card(\Omega)=|\Omega|=C^2_{36}=18\times35$
+	\item Бросание монеты до первого герба
+	$\Omega=$ \{Г, РГ, РРГ, \ldots\}
+	\item Поезда в метро ходят с интервалом 2 минуты. Человек появляется на платформе в произвольный момент. Сколько ему ожидать поезд?
+	$\Omega=$ [0 мин, 2 мин)
+\end{enumerate}
+
+\section{Дискретная вероятностная схема}
+
+Пусть $\Omega$ --- не более чем счётно
+
+\begin{defenition}
+	$\forall A\subseteq\Omega$ называют {\bfseries событием}. {\bfseries$\Sigma$} --- множество всех подможеств $\Omega$.
+\end{defenition}
+
+\begin{defenition}
+	{\bfseries$P=P(A)$} --- счётно-аддитивная мера, если
+	\begin{enumerate}
+		\item $\forall\omega\in\Omega\quad P(\omega)\in[0, 1], p(\omega)\geqslant0$
+		\item $\sum_{\omega\in\Omega}p(\omega)=1$
+	\end{enumerate}
+    $$
+    P\colon\Omega\to\mathbb{R_+}
+    $$
+    $$
+    \forall A\subseteq\Omega\quad P(A)=\sum_{\omega\in\Omega}p(\omega)
+    $$
+\end{defenition}
+
+\begin{example}
+	{\bfseries Классическая схема}
+	$$
+	|\Omega|=n
+	$$
+	исходы равновозможны: $$
+	\omega\in\Omega p(\omega)=\frac{1}{\Omega}=\frac1n
+	$$
+	$$
+	\sum_{\omega\in\Omega}p(\omega)=\frac1n\sum_{\omega\in\Omega}1=1
+	$$
+	В примере априорном 1
+	
+	$\Omega=$ \{ГГ, РГ, ГР, РР\}
+	$$
+	p(\omega_i)=\frac{1}{\Omega}=\frac14
+	$$
+	A --- присутствует герб
+	$$
+	p(A)=p(\mbox{ГГ})+p(\mbox{ГР})+p(\mbox{РГ})=\frac34
+	$$
+\end{example}
+
+\section{Несчётное вероятностное пространство}
+
+\begin{defenition}
+Пусть $\Omega$ --- более чем счётно $\Rightarrow$ {\bfseries$\Sigma$} --- выделенная $\sigma$-алгебра из пдмножеств $\Omega$. 
+
+$A\in\Sigma\quad\Rightarrow A$ называют {\bfseries соытием}.
+\end{defenition}
+
+Для определения $\mathcal{A}$ --- алгебра, $\Sigma$ --- $\sigma$-алгебра нужны действия:
+\begin{enumerate}
+	\item Сложение ($A+B$)
+	\item Умножение ($A\cdot B$)
+	\item Разность ($A\backslash B$)
+\end{enumerate}
+
+\subsection{Свойства действий}
+
+\begin{enumerate}
+	\item $A+B=B+A$, $(A+B)+C=A+(B+C)$
+	\item $A\cdot B=B\cdot A$, $(A\cdot B)\cdot C=A\cdot(B\cdot C)$
+	\item $A\cdot\Omega=A$, $A\cdot\emptyset=\emptyset$, $A+\Omega=\Omega$, $A+\emptyset=A$
+	\item $\overline{A}=\Omega\backslash A$, $A\cdot\overline{A}=\emptyset$
+	\item $A+\overline{A}=\Omega$
+	\item $A\cdot B\subseteq A$, $A\cdot B\subseteq B$
+	\item $\overline{\overline{A}}=A$
+	\item $A\backslash B=A\cdot\overline{B}$
+	\item $\overline{A+B}=\overline{A}\cdot\overline{B}$
+	\item $\overline{A\cdot B}=\overline{A}+\overline{B}$
+	\item $(A+B)\cdot C=A\cdot C + B\cdot C$
+	\item $(A\backslash B)\cdot C=AC\backslash BC$
+\end{enumerate}
+
+\begin{remark}
+	Свойства 9--11 обобщаются на любое число множеств
+	\begin{enumerate}\addtocounter{enumi}{8}
+		\item $\overline{\sum\limits^{\infty}_{i=1}A_i}=\prod\limits_{i=1}^{\infty}\overline{A_i}$
+		\item $\overline{\prod\limits_{i=1}^{\infty}A_i}=\sum\limits_{i=1}^{\infty}\overline{A_i}$
+		\item $B\sum\limits_{i=1}^{\infty}A_i=\sum\limits_{i=1}^{\infty}BA_i$
+	\end{enumerate}
+\end{remark}
+
+\begin{defenition}
+	$\mathcal{A}$ называют алгеброй множеств если
+	\begin{enumerate}
+		\item $\Omega$ --- объект $\mathcal{A}$
+		\item Пусть $A\in\mathcal{A}\Rightarrow\overline{A}\in\mathcal{A}$
+		\item Пусть $A, B\in\mathcal{A}\Rightarrow A+B\in\mathcal{A}$
+	\end{enumerate}
+\end{defenition}
+
+\begin{predl}
+	Алгебра замкнута относительно действий в конечном числе
+\end{predl}
+\begin{proof}[Доказательство утверждения]
+	\begin{enumerate}
+		\item $\forall A,B\in\mathcal{A}\quad A\cdot B=\overline{\overline{A}+\overline{B}}\Rightarrow A\cdot B\in\mathcal{A}$
+		\item $\forall A,B\in\mathcal{A}\quad A\backslash B=A\cdot\overline{B}$
+	\end{enumerate}
+\end{proof}
+
+\begin{defenition}
+	$\Sigma$ называют {\bfseries$\sigma$-алгеброй множеств} $\Omega$, если $\Sigma$ --- алгебра и $A_i\in\Sigma$, $i=1, 2, \ldots \Rightarrow\sum\limits_iA_i\in\Sigma$
+\end{defenition}
+
+\begin{defenition}
+	<$\Omega$, $\Sigma$> называют {\bfseries измеримым пространством}.
+\end{defenition}
+
+\subsection{Связь $\mathcal{A}$ и $\Sigma$}
+
+\begin{enumerate}
+	\item Пусть $|\Omega|=n$
+	
+	$\mathcal{A}$ --- содержит все элементы $\Omega \Rightarrow \mathcal{A}=\Sigma$
+	\item $|\Omega|=\mathbb{N}$
+	
+	Пусть $\mathcal{A}$ --- содежит все элемнты $\Omega$
+	
+	$\mathcal{A}$ не содержит, например, всех чётных натуральных чисел
+	\item $\Omega$ более чем счётно
+	
+	Пусть $\Omega=\mathbb{R}\Rightarrow\Sigma$ порождается множеством интервалов (абсолютн любых). Если только [a, b), то она называется {\bfseries борелевской} $\sigma$-алгеброй.
+	\begin{remark}
+		Борелевская $\sigma$-алгебра отличается от Лебега тем, что она не замкнута.
+	\end{remark}
+    Пусть $\Omega=\mathbb{R^n}\Rightarrow\Sigma$ порождается n-мерными кубами: $[a_1, b_1)\times[a_2,b_2)\times\ldots$
+    
+    Борелевская алгебра для $\mathbb{R}$ представляет собой множество элементов вида: $A=\sum\limits_{i=1}^n[a_i,b_i)\quad[a_i,b_i]\bigcap\limits^{i\ne j}[a_j,b_j)=\emptyset$
+\end{enumerate}
+
+\begin{defenition}
+	\begin{enumerate}
+		\item $\Omega=D$ --- {\bfseries достоверное} событие.
+		\item $\emptyset$ --- {\bfseries невозможное} событие.
+		\item $A\cdot B=\emptyset\Rightarrow A$ и $B$ называют {\bfseries несовместными}.
+		\item $\overline{A}$ --- {\bfseries противоположное} событие.
+	\end{enumerate}
+\end{defenition}
+\end{document}
