@@ -1789,6 +1789,76 @@ override fun tryAcquire(arg: Int): Boolean {
 }
 \end{lstlisting}
 
+\section{FAA Based Queue}
+
+\subsection{Fetch-And-Add}
+
+\begin{itemize}
+	\item FAA(adress, delta) --- атомарно увеличивает значение на delta и возвращает старое значение
+	\item FAA гораздо лучше масштабируется, чем CAS
+	\item Modern queues use Fetch-And-Add
+\end{itemize}
+
+\subsection{Obstruction-free queue on ifinite array}
+
+\begin{itemize}
+	\item Бескнечный массив и указатели для enqueue и dequeue. Сначала увеличиваем индекс потом пишем читаем.
+	\item Если dequeue придёт читать раньше чем произошла запись, то мы пометим ячейку как сломанную и обе операции начнутся заново
+\end{itemize}
+
+\begin{lstlisting}
+fun enqueue(x: T) = while(true) {
+    val enqIdx = FAA(&this.enqIdx, 1)
+    if (CAS(&data[enqIdx], null, x))
+        return
+}
+
+fun dequeu(): T = while(true) {
+    if (isEmpty()) return null
+    val deqIdx = FAA(&this.deqIdx, 1)
+    val res = SWAP(&data[deqIdx], BROKEN)
+    if (res == null) continue
+    else return (T) res
+}
+
+fun isEmpty(): Boolean = deqIdx >= neqIdx
+\end{lstlisting}
+
+\subsubsection{Michael-Scott queue of array segments}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MSQueue1}
+	\caption{MS queue of array segments}
+	\label{fig:msqueue1}
+\end{figure}
+
+\begin{lstlisting}
+fun enqueue(x: T) = while (true) {
+    val tail = this.tail
+    val enqIdx = FAA(&tail.enqIdx, 1)
+    if (enqIdx >= NODE_SIZE) {
+        //try to insert new Node with "x"
+    } else {
+        if (CAS(&data[enqIdx], null, x))
+            return
+    }
+}
+
+fun dequeue(): T = while(true) {
+    val head = this.head
+    if (head.isEmpty()) {
+        val headNext = head.next ?: return null
+        CAS(&this.head, head, headNext)
+    } else {
+        val deqIdx = FAA(&head.deqIdx, 1)
+        if (deqIdx >= NODE_SIZE) continue
+        val res = SWAP(&data[deqIdx], BROKEN)
+        if (res == null) continue
+        else return res
+    }
+}
+\end{lstlisting}
 
 
 \section{Железо и спин-локи}
