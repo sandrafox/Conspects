@@ -1284,15 +1284,36 @@ fun <A,B> cas2(a: Ref<A>, expectA: A, updateA: A, b: Ref<B>, expectB: B, updateB
 	\label{fig:casn7}
 \end{figure}
 
-
 \section{Мониторы и ожидание}
+
 \subsection{Объекты как функции}
 \begin{itemize}
-	\item Операция над объектом как функция
-	\item Ранее опеарции были всюду определены на паре (S, P)
+	\item Операция над объектом как функция $f(S, P)=(S', R)$
+	\item Ранее опеарции были {\bfseries всюду определены} на паре $(S, P)$
+	\begin{itemize}
+		\item Если операцию нельзя выполнить, то результат --- ошибка или исключение
+	\end{itemize}
+    \item В общем случае операции могут быть {\bfseries частично определены} на множестве пар $(S, P)$
+    \begin{itemize}
+    	\item Операция не может завершиться и \emph{ждёт}
+    \end{itemize}
 \end{itemize}
 
 \subsection{Очередь ограниченного размера с ожиданием}
+
+\begin{itemize}
+	\item Обычные операции
+	\begin{itemize}
+		\item {\bfseries size(): int} --- узнать текущий размер
+		\item {\bfseries offer(item): Boolean} --- вернет {\bfseries false} если свободнго места нет
+		\item {\bfseries poll(): item?} --- вернёт {\bfseries null} если очередь пуста
+	\end{itemize}
+    \item Операции с ожиданием
+    \begin{itemize}
+    	\item {\bfseries put(item)} --- положить элемент в очередь если есть свободное место (иначе ждёт, в этом состоянии операция не определена)
+    	\item {\bfseries take(): item} --- взять элемент из очереди если она не пуста (иначе ждёт)
+    \end{itemize}
+\end{itemize}
 
 \subsection{Лианеризуемость операций с ожиданием}
 \begin{itemize}
@@ -1304,31 +1325,471 @@ fun <A,B> cas2(a: Ref<A>, expectA: A, updateA: A, b: Ref<B>, expectB: B, updateB
 			\item\begin{defenition}
 				A это {\bfseries незавершенная} операция, если нет resp(A)
 			\end{defenition}
+		    \item \begin{defenition}
+		    	inv(A) --- это {\bfseries незавершенный вызов}
+		    \end{defenition}
 		\end{itemize}
 	\end{itemize}
+    \item \begin{defenition}
+    	Исполнение {\bfseries лианеризуемо}
+    	\begin{itemize}
+    		\item Если для незавершенных операций можно
+    		\begin{itemize}
+    			\item Либо добавить ответы
+    			\item Либо выкинуть их из исполнения
+    	    \end{itemize}
+            \item Чтобы получилось допустимое последовательное исполнение: $inv(A_1)\to reps(A_1)\to inv(A_2)\to resp(A_2)\ldots$
+    	\end{itemize}
+    \end{defenition}
+    Рисунки \ref{fig:queuewait1} и \ref{fig:queuewait2}
 \end{itemize}
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/QueueWait1}
+	\caption{Лианеризуемое исполнение}
+	\label{fig:queuewait1}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/QueueWait2}
+	\caption{Нелианеризуемое исполнение}
+	\label{fig:queuewait2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/QueueWait3}
+	\caption{}
+	\label{fig:queuewait3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/QueueWait4}
+	\caption{}
+	\label{fig:queuewait4}
+\end{figure}
+
 \subsection{Реализация через монитор}
-Monitor = mutex + conditional variables
+{\bfseries Monitor = mutex + conditional variables}
 \begin{itemize}
-	
-	\item
+	\item Взаимное исключение для защиты данных от одновременного изменения
+	\item Условные переменные для ожидания
+	\item Мониторы придуманы Энтони Хоар (1974) (поэтому они также называются "Hoare monitors")
 \end{itemize}
 
 \subsection{Монитор в Java}
-В Java каждый объект имеет монитор с одной условной переменной
 
-В некотрых сстемах wait() реализован как хэш-таблица, при чем при коллизии кого-нибудь разбудим.
+\begin{itemize}
+	\item В Java каждый объект имеет монитор с \emph{одной} условной переменной
+	\begin{itemize}
+		\item {\bfseries synchronized}
+		\begin{itemize}
+			\item {\bfseries monitorenter} (lock)
+			\item {\bfseries monitorexit} (unlock)
+		\end{itemize}
+		\item {\bfseries wait, notify, notifyAll} --- для работы с условной переменной
+	\end{itemize}
+\end{itemize}
+
+В некотрых сстемах wait() реализован как хэш-таблица, при чем при коллизии кого-нибудь разбудим Поэтому ждать нужно в цикле, чтобы каждый раз проверяь условие.
 
 Wait() и notify() можно использовать только внутри критической секции (в synchronized)
 
-Так как в мониторе только одна условная переменная, то, если у нас есть потоки ожидающие разных событий, то мы не можем использовать метод notify(), так как мы можем разбудить не тот поток.
+Так как в мониторе только одна условная переменная, то, если у нас есть потоки ожидающие разных событий, то мы не можем использовать метод notify(), так как мы можем разбудить не тот поток и, поэтому тоже wait надо использовать в цикле.
+
+\subsection{Циклическая очередь с ожиданием на массиве}
+
+\begin{lstlisting}[language=Java]
+public class BlockingQueue<T> {
+    privite final T[] items;
+    privite final int n;
+    privite int head;
+    privite int tail; 
+}
+\end{lstlisting}
+
+\subsubsection{size()}
+
+Испльзуем грубую синхронизацию через встроенный в Java объекты монитор
+
+\begin{lstlisting}[language=Java]
+privite synchronized int size() {
+    return (tail - head + ) % n;
+}
+\end{lstlisting}
+
+\subsubsection[poll()]{Неждущий poll()}
+
+\begin{lstlisting}[language=Java]
+public synchronized T poll() {
+    if (head == tail) return null;
+    T result = items[head];
+    items[head] = null;
+    if ((tail + 1) % n == head) notifyAll();
+    head = (head + 1) % n;
+    return result; 
+}
+\end{lstlisting}
+
+\subsubsection[take()]{Ждущий take()}
+
+\begin{lstlisting}[language=Java]
+public synchronized T take() throws InterruptedException {
+    while (head == tail) wait();
+    T result = items[head];
+    items[head] = null;
+    if ((tail + 1) % n == head) notifyAll();
+    head = (head + 1) % n;
+    return result;
+}
+\end{lstlisting}
+
+\subsubsection[offer()]{Неждущий offer()}
+
+\begin{lstlisting}[language=Java]
+public synchronized boolean offer(T item) {
+    int next = (tail + 1) % n;
+    if (next == head) return false;
+    items[tail] = item;
+    if (tail == head) notifyAll();
+    tail = next;
+    return true;
+}
+\end{lstlisting}
+
+\subsubsection[put()]{Ждущий put()}
+
+\begin{lstlisting}[language=Java]
+public synchronized void put(T item) throws InterruptedException {
+    while (true) {
+        int next = (tail + 1) % n;
+        if (next == head) {
+            wait();
+            continue;
+        }
+        items[tail] = item;
+        if (tail == head) notifyAll();
+        tail = next;
+        return;
+    }
+}
+\end{lstlisting}
+
+\subsection{notify() vs notifyAll()}
+
+Если бы для каждого условия была своя отдельная переменная, то можно использовать {\bfseries notify()}. 
 
 \subsection{ReentrantLock}
 
+\begin{itemize}
+	\item В пакете java.util.concurrent есть интерфейс {\bfseries Lock}
+	\begin{itemize}
+		\item С методами {\bfseries lock, unlock, newCondition}
+		\item И {\bfseries ReentrantLock} --- его реализация
+		\item Интерфейс {\bfseries Condition} для условных переменных с методами {\bfseries await, signal, signalAll}
+		\item Можем завести отдельную переменную для каждого условия
+	\end{itemize}
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+privite final Lock lock = new ReentrantLock();
+privite final Condition notFull = lock.newCondition();
+privite final Condition notEmpty = lock.newCondition();
+\end{lstlisting}
+
+Но даже в этом случае мы не можем бездумно использовать signal
+
+\subsubsection{Проблематичный сценарий}
+
+\begin{itemize}
+	\item Рассмотрим такую последовательность операций (рисунок~\ref{fig:queuewait5})
+	\begin{enumerate}
+		\item Два {\bfseries put} ждут {\bfseries notFull}
+		\item Пришёл {\bfseries take}, сделал очередь неполной, послал {\bfseries notFull}
+		\item Но один из {\bfseries put} не успел проснуться и взять {\bfseries lock} по сигналу
+		\item Пришёл ещё {\bfseries take}. Очередь уже не полная, так что он не посылает еще один сигнал {\bfseries notFull}
+	\end{enumerate}
+    \item Итого: один {\bfseries put} проснулся, а другой продолжает спать, хотя очередь уже не полна
+    \item Вывод: в отличии от {\bfseries notifyAll/signalAll} оптимизировать вызовы {\bfseries notify/signal} нужно осторожно (в данном случае нельзя)
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/QueueWait5}
+	\caption{}
+	\label{fig:queuewait5}
+\end{figure}
+
 \subsection{Подробней про interrupt}
 
+\begin{itemize}
+	\item У каждого потока есть \emph{interrupted} флаг
+	\begin{itemize}
+		\item Его ставит метод {\bfseries Thread.interrupt}
+		\item Его проверяют методы {\bfseries wait, await} и тому подобное
+		\item В случае обнаружения выставленного флага эти методы
+		\begin{itemize}
+			\item Прекращают ждать
+			\item Сбрасывают флаг
+			\item Кидают {\bfseries InterruptedException}
+		\end{itemize}
+	\end{itemize}
+    \item Это {\bfseries кооперативный} способ прерывания заблокированных потоков
+    \begin{itemize}
+    	\item Не нужно знать что именно ждёт поток
+    	\item Но не надейтесь, что это будет работать в случае использования сторонних библиотек 
+    \end{itemize} 
+\end{itemize}
+
+\subsubsection{Ненужный InterruptedException}
+
+Если нужно реализовать метод, который ждёт но не выкидывает {\bfseries InterruptedException}, то interrupted флаг надо перевыставить
+
+\begin{lstlisting}[language=Java]
+public T takeOrNull() {
+    try {
+        return take();
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return null;
+    }
+}
+\end{lstlisting} 
+
+\subsection{Поток обрабатывающий очередь}
+
+\begin{itemize}
+	\item Заводим свой флаг сигнализирующий, что поток надо остановить
+	\begin{itemize}
+		\item В отличие от флага interrupted нет риска, что какой-то сторонний метод его случайно сбросит
+	\end{itemize}
+    \item Метод {\bfseries run} выходит в случае прерывания
+    \begin{itemize}
+    	\item Флаг interrupted перевыставлять не надо
+    \end{itemize}
+\end{itemize}
+
+\begin{lstlisting}[language=Java]
+public class DoSomething<T> extends Thread {
+    privite final BlockingQueue<T> queue;
+    privite volatile boolean closed;
+    
+    public void close() {
+        close = true;
+        interrupt();
+    }
+    
+    @Override
+    public void run() {
+        try {
+            while(!closed) {
+                T item = queue.take();
+                doSomething(item);
+            }
+        } catch (InterruptedException e) {
+            //ignore exception
+        }
+    }
+}
+\end{lstlisting}
+
 \subsection{Ожидание без блокировки}
+
+{\bfseries Пример: обновляемое значение}
+\begin{itemize}
+	\item Почти очередь на один элемент
+	\item Операции
+	\begin{itemize}
+		\item {\bfseries update(item)} --- обновить текущее значение
+		\item {\bfseries remove():item?} --- забрать и сбросить текущее значение
+		\item {\bfseries take():item} --- ждёт пока новое значение появится
+	\end{itemize}
+\end{itemize}
+
+\subsubsection{Реализация с блокиовкой}
+
+\begin{lstlisting}
+class DataHolder<T> {
+    privite var value: T? = null
+    privite val lock = ReentrantLock()
+    privite val updated = lock.newCondition()
+    
+    fun update(item: T) = lock.withLock {
+        value = item
+        updated.signal()
+    }
+    
+    fun remove(): T? = lock.withLock {
+        value.also {value = null}
+    }
+    
+    fun take(): T = lock.withLock {
+        while (value == null) updated.await()
+        value!!.also {value = null}
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Реализация без блокировок}
+
+\begin{lstlisting}
+class DataHolder<T> {
+    privite val v = atomic<T?>(null)
+    
+    fun update(item: T) {
+        v.value = item //volotile write
+        LockSupprort.unpark()
+    }
+    
+    fun remove(): T? {
+       v.loop { cur -> 
+           if (cur == null) return null
+           if (v.compareAndSet(cur, null)) return cur
+       }
+    }
+}
+\end{lstlisting}
+
+\paragraph{Ожидание без блокировки (park())}
+
+Здесь важен порядок: обновить $\to$ разбудить ({\bfseries unpark()})
+
+\begin{lstlisting}
+class TakerThread<T>: Thread() {
+    //...
+    
+    fun take(): T {
+        assert (Thread.currentThread() == this) 
+        v.loop { cur -> 
+            if (cur == null) {
+                LockSupport.park()
+                if (interrupted()) {
+                    throw InterruptedException()
+                }
+                return@loop //continue
+            }
+            if (c.vompareAndSet(cur, null)) return cur
+        }
+    }
+}
+\end{lstlisting}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/Park}
+	\caption{Магия park/unpark}
+	\label{fig:park}
+\end{figure}
+
+\subsection{Ожидание из многих потоков}
+
+\begin{itemize}
+	\item Нужна очередь ждущих потоков
+	\begin{itemize}
+		\item Нетривиально написать
+	\end{itemize}
+    \item Возьмём готовую
+    \item {\bfseries java.util.concurrent.lock.AbstractQueuedSynchronizer (рисунки \ref{fig:abstractqueuedsynchronizer1} и \ref{fig:abstractqueuedsynchronizer2})
+    \begin{itemize}
+    	\item ReentrantLock
+    	\item ReentrantReadWriteLock
+    	\item Semaphore
+    	\item CountDownLatch
+    \end{itemize}
+}
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/AbstractQueuedSynchronizer1}
+	\caption{Анатомия AbstractQueuedSynchronizer(1)}
+	\label{fig:abstractqueuedsynchronizer1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\linewidth]{pictures/AbstractQueuedSynchronizer2}
+	\caption{Анатомия AbstractQueuedSynchronizer(2)}
+	\label{fig:abstractqueuedsynchronizer2}
+\end{figure}
+
+\subsubsection{Пишем свой внутренний синхронайзер}
+
+\begin{lstlisting}
+inner class Sync: AbstractSynchronizer() {
+    override fun tryAcquire(arg: Int): Boolean {
+        val cur = v.value ?: return false
+        if (!v.compareAndSet(cur, null)) return false
+        //need to return value there
+        results[arg] = cur
+        return true
+    }
+    
+    //always "release" --- wake up next thread
+    override fun tryRelease(arg: Int): Boolean = true
+}
+\end{lstlisting}
+
+\subsubsection{Используем его}
+
+\begin{lstlisting}
+privite val sync = Sync()
+
+fun update(item: T) {
+    v.value = item
+    sync.release(0) //send signal
+}
+
+fun take(): T {
+    val arg = reserveResultSlot()
+    sync.acquireInterruptibly(arg) //wait inner
+    //recheck for not lost unpark
+    if (v.value != null) sync.release(0)
+    return releaseResultSlot(arg)
+}
+\end{lstlisting}
+
+\subsubsection{Улучшаем производительность}
+
+\begin{itemize}
+	\item Идея будить поток только когда обновляем: {\bfseries null} $\to$ значение
+	\item Не работает очень тонким образом (рисунок~\ref{fig:fail})
+	\subitem Из-за {\bfseries update} параллельный {\bfseries tryAcquire} может обламаться на CAS и запарковаться, но так как мы больше не вызываем {\bfseries release}, то никто его больше не разбудит
+\end{itemize}
+
+\begin{lstlisting}
+fun update(item: T) {
+    T old = v.getAndSet(item)
+    if (old == null) sync.release(0)
+}
+\end{lstlisting}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Fail}
+	\caption{Fail}
+	\label{fig:fail}
+\end{figure}
+
+\paragraph{Исправляем tryAcquire}
+
+Используем цикл и повторяем, если CAS упал
+
+\begin{lstlisting}
+override fun tryAcquire(arg: Int): Boolean {
+    while(true) {
+        val cur = v.value ?: return false
+        if (!v.compareAndSet(cur, null)) continue
+        results[arg] = cur
+        return true
+    }
+}
+\end{lstlisting}
+
+
 
 \section{Железо и спин-локи}
 Так как у каждого ядра есть кэш, то он читает значение не и глобальной памяти, а из кэша, что ломает нам многопоточность. Решение - протокол MESI
