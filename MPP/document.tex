@@ -1860,6 +1860,43 @@ fun dequeue(): T = while(true) {
 }
 \end{lstlisting}
 
+\section{Counter Sharding}
+
+\subsection{Naive counter}
+
+\begin{lstlisting}
+var counter = 0
+fun inc() { FAA(&counter, 1)}
+fun get():Int = counter
+\end{lstlisting}
+
+\begin{itemize}
+	\item FAA берёт блокировку на уровне железа
+	\item Часто вызываем inc $\Rightarrow$ contention на поле {\bfseries counter}
+\end{itemize}
+
+\subsection{Sharding}
+
+\begin{itemize}
+	\item get() вызывается сильно реже inc()
+	\begin{itemize}
+		\item Например, собирается какая-то perfomance метрика
+	\end{itemize}
+    \item Разобьём на несколько мини счётчиков (рисунок~\ref{fig:countersharding})
+    \begin{itemize}
+    	\item {\bfseries inc()} --- увеличивает случайный из них
+    	\item {\bfseries get()} --- суммирует начения всех мини счётчиков
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CounterSharding}
+	\caption{Counter Sharding}
+	\label{fig:countersharding}
+\end{figure}
+
+
 
 \section{Железо и спин-локи}
 Так как у каждого ядра есть кэш, то он читает значение не и глобальной памяти, а из кэша, что ломает нам многопоточность. Решение - протокол MESI
