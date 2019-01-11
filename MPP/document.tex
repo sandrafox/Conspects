@@ -1896,6 +1896,44 @@ fun get():Int = counter
 	\label{fig:countersharding}
 \end{figure}
 
+\section{Elimination technique}
+
+\subsection{Naive Stack implementation}
+
+В наивной реализации создаётс слишком высокий contention на head
+
+\begin{lstlisting}
+var head: Node = ...
+
+fun push() {
+    ...
+    CAS(&head, ...)
+    ...
+}
+
+fun pop() {
+    ...
+}
+\end{lstlisting}
+
+\subsection{Elimination}
+
+Если выполняются много {\bfseries push()} и {\bfseries pop()} одновременно, тл позвлим им встретиться на "нейтральной территории" (рисунок~\ref{fig:elimination}). Используется старый алгоритм, если оптимизация не получилась.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/Elimination}
+	\caption{Elimination}
+	\label{fig:elimination}
+\end{figure}
+
+\begin{itemize}
+	\item Обе операции при выборе случайной ячейки пробуют посмотреть на соседние при неудаче
+	\begin{itemize}
+		\item Это "дёшево", т.к. они скорее всего закешированы
+	\end{itemize}
+    \item На практике elimination должен быть адаптивным, чтобы не тратить время на эту "оптимизацию" впустую и выбрать наиболее оптимальный размер массива
+\end{itemize}
 
 
 \section{Железо и спин-локи}
