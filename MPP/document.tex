@@ -1937,14 +1937,420 @@ fun pop() {
 
 
 \section{Железо и спин-локи}
-Так как у каждого ядра есть кэш, то он читает значение не и глобальной памяти, а из кэша, что ломает нам многопоточность. Решение - протокол MESI
 
-\subsection{Backoff}
-delay() - рандомизированный, т.к. если если несколько потоков ломанулись в блокировку и одному повезло, то он иожет очень быстро выполнить операцию и без делэя все остальные потоки снова ломанутся, это будет плохо, а если будет рандомищированный делэй, то кому-то из потоков повезет и он будет маленькое количество времени спать, и быстро схватит блокировку. Это очень важно, если у нас короткая блокировка.
+\subsection{Работа с общей памятью}
+
+В простом случае работа происходит через общую шину напрямую с памятью, поэтому если один поток успел записать значение, то другой его увидит сразу текущее. Но, так как прямая связь дорогая и долгая, ядру добавляют собственную память, которая называется кеш. Все взаимодействие с памятью происходит через него: когда мы читаем, то вначале пытаемся из кеша, и лишь при неудаче читаем из памяти. Поэтому, когда другой поток обнвит значение, мы этого сразу не увидим. Это ломает многопоточность. Решение - протокол MESI.
+
+\subsection[MESI]{Протокол MESI}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI1}
+	\caption{MESI start}
+	\label{fig:mesi1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI2}
+	\caption{MESI Exclusive(1)}
+	\label{fig:mesi2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI3}
+	\caption{MESI Exclusive(2)}
+	\label{fig:mesi3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI4}
+	\caption{MESI Exclusive(3)}
+	\label{fig:mesi4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI5}
+	\caption{MESI Exclusive(4)}
+	\label{fig:mesi5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI6}
+	\caption{MESI Exclusive(5)}
+	\label{fig:mesi6}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI7}
+	\caption{MESI Shared(1)}
+	\label{fig:mesi7}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI8}
+	\caption{MESI Shared(2)}
+	\label{fig:mesi8}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI9}
+	\caption{MESI Shared(3)}
+	\label{fig:mesi9}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI10}
+	\caption{MESI Shared(4)}
+	\label{fig:mesi10}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI11}
+	\caption{MESI Shared(5)}
+	\label{fig:mesi11}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI12}
+	\caption{MESI Modified(1)}
+	\label{fig:mesi12}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI13}
+	\caption{MESI Modified(2)}
+	\label{fig:mesi13}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI14}
+	\caption{MESI Flush(1)}
+	\label{fig:mesi14}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MESI15}
+	\caption{MESI Flush(2)}
+	\label{fig:mesi15}
+\end{figure}
+
+\subsubsection[MOSI]{MESI $\to$ MOSI (O = Owned)}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MOSI}
+	\caption{MOSI}
+	\label{fig:mosi}
+\end{figure}
+
+\begin{itemize}
+	\item {\bfseries MESIF} = MESI + Forward(Intel)
+	\item {\bfseries MOESI} = MESI + Owned(AMD)
+\end{itemize}
+
+\subsection{Test-And-Set (aka get-And-Set)}
+
+\begin{lstlisting}
+class TASRegister :
+    shared r
+    
+    def getAndSet(x): atomically do
+        old = r
+        r = x
+        return old
+        
+    def write(x):
+        r = x
+        
+    def read():
+        return r
+\end{lstlisting}
+
+\subsubsection{lock}
+
+\begin{lstlisting}
+class Lock:
+    boolean locked
+    
+    def lock():
+        while locked.getAndSet(true):
+            pass
+            
+    def unlock():
+        locked = false
+\end{lstlisting}
+
+Цикл в {\bfseries lock()} каждый раз перезаписывает locked, что вызывает состояние Exclusive и сброс всех кешей --- не оптимально.
+
+\begin{lstlisting}
+def lock():
+    loop:
+        while locked: pass
+        if !locked.getAndSet(true):
+            break
+\end{lstlisting}
+
+В данном варианте while крутиться без шума в состоянии Shared. Но когда блокирующий поток вызывает {\bfseries unlock()} все начинают ломиться в {\bfseries getAndSet(true)}, что снова создаёт большую нагрузку и состояние Exclusive. 
+
+\paragraph{Backoff}
+
+\begin{lstlisting}
+def lock():
+    loop:
+        while locked: pass
+        if !locked.getAndSet(true):
+            break
+        delay()
+\end{lstlisting}
+
+Свойства delay():
+\begin{enumerate}
+	\item Случайное время
+	\item Экспоненциально увеличивать
+	\item Настройка под платформу
+\end{enumerate}
+
+delay() - рандомизированный, т.к. если если несколько потоков ломанулись в блокировку и одному повезло, то он может очень быстро выполнить операцию и без делэя все остальные потоки снова ломанутся, это будет плохо, а если будет рандомизированный делэй, то кому-то из потоков повезет и он будет маленькое количество времени спать, и быстро схватит блокировку. Это очень важно, если у нас короткая блокировка.
 
 Но этот алгоритм был нечестным, так как поток мог прийти последним и получить блокировку первым.
 
-Напишем алгоритм с fist-come-first-served : CLH Lock
+\subsection{CLH Lock}
+
+\begin{itemize}
+	\item Travis {\bfseries C}raig, Andres {\bfseries L}andin, Erik {\bfseries H}agerstern
+	\item Устраним лишние инвалидации
+	\item Храним очередь ждущих потоков
+	\item First-Come First-Served
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH1}
+	\caption{Начало: не занято}
+	\label{fig:clh1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH2}
+	\caption{Поток 1}
+	\label{fig:clh2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH3}
+	\caption{Узел 1}
+	\label{fig:clh3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH4}
+	\caption{Захват блокировки}
+	\label{fig:clh4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH5}
+	\caption{Занято 1-м потоком}
+	\label{fig:clh5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH6}
+	\caption{Поток 2}
+	\label{fig:clh6}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH7}
+	\caption{Узел 2}
+	\label{fig:clh7}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH8}
+	\caption{Добавление в очередь}
+	\label{fig:clh8}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH9}
+	\caption{Поток 2 в очереди}
+	\label{fig:clh9}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH10}
+	\caption{Поток 2 ждёт (1)}
+	\label{fig:clh10}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH11}
+	\caption{Поток 2 ждёт (2)}
+	\label{fig:clh11}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH12}
+	\caption{Очередь}
+	\label{fig:clh12}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH13}
+	\caption{Поток 1 освобождает}
+	\label{fig:clh13}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH14}
+	\caption{Занято 2-м потоком (1)}
+	\label{fig:clh14}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH15}
+	\caption{Занято 2-м потоком (2)}
+	\label{fig:clh15}
+\end{figure}
+
+\subsection{NUMA}
+{\bfseries N}on-{\bfseries U}niform {\bfseries M}emory {\bfseries A}ccess
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/CLH16}
+	\caption{NUMA}
+	\label{fig:clh16}
+\end{figure}
+
+CLH Lock:
+\begin{itemize}
+	\item Ждём на "чужой памяти"
+	\item Она может быть "далеко"
+\end{itemize}
+
+\subsection{MCS Lock}
+
+\begin{itemize}
+	\item Ждём на своей памяти
+	\item First-Come First-Served
+\end{itemize}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS1}
+	\caption{Начало: не занято}
+	\label{fig:mcs1}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS2}
+	\caption{Поток 1}
+	\label{fig:mcs2}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS3}
+	\caption{Узел 1}
+	\label{fig:mcs3}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS4}
+	\caption{Захват}
+	\label{fig:mcs4}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS5}
+	\caption{Создали явный список}
+	\label{fig:mcs5}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS6}
+	\caption{Поток 2}
+	\label{fig:mcs6}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS7}
+	\caption{Узел 2}
+	\label{fig:mcs7}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS8}
+	\caption{Добавление в очередь}
+	\label{fig:mcs8}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS9}
+	\caption{Создание списка}
+	\label{fig:mcs9}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS10}
+	\caption{Ждём на своём объекте}
+	\label{fig:mcs10}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/MCS11}
+	\caption{Поток 1 освобождает}
+	\label{fig:mcs11}
+\end{figure}
+
+
+
+
+
+
+
+
+
 
 Isolation - пока транзакция работает, дригие не должны видеть несогласованный результат
 Consistency - струдники не исчезают
