@@ -1,0 +1,192 @@
+\documentclass[10pt,a4paper,oneside,titlepage]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cmll}
+\usepackage{enumerate}
+\usepackage{stmaryrd}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{url}
+\usepackage{listingsutf8}
+\usepackage{graphicx}
+\graphicspath{{pictures/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\lstset{%
+	numbers = left
+}
+
+\title{Конспект по курсу Сети \thanks{Читаемый  в 2019-2020 годах}}
+\author{Александра Лисицына \thanks{Студентка группы М3435}}
+
+\theoremstyle{defenition}
+\newtheorem*{defenition}{Определение}
+
+\begin{document}
+	
+\maketitle
+
+\tableofcontents
+
+\clearpage	
+
+\chapter{Введение}
+
+\section{Модель OSI}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/ModelOSI}
+	\caption[Модель OSI]{}
+	\label{fig:modelosi}
+\end{figure}
+
+\subsection{Прикладной уровень (application layer)}
+
+Основные функции:
+\begin{itemize}
+	\item Передача служебной информации приложений
+	\item Предоставляет приложениям информацию об ошибках
+\end{itemize}
+
+Примеры протоколов: {\bfseries FTP} (File Transfer Protocol), {\bfseries Telnet} (TErminaL NETwork), {\bfseries HTTP} (HyperText Transfer Protocol), {\bfseries POP3} (Post Office Protocol Version 3), {\bfseries SMTP} (Simple Mail Transfer Protocol).
+
+\subsection{Уровень представления данных (presentation layer)}
+
+Основные функции:
+\begin{itemize}
+	\item Сжатие данных
+	\item Шифрование данных
+	\item Перекодировка данных
+\end{itemize}
+
+Примеры протоколов: {\bfseries SSl} (Secure Socket Layer), {\bfseries RDP} (Remote Desktop Protocol).
+
+\subsection{Сеансовый уровень (session layer)}
+
+Основные функции:
+\begin{itemize}
+	\item Обеспечивает установление, поддержание и завершение сеанса связи, позволяя приложениям взаимодействовать между собой длительное время
+\end{itemize}
+
+Примеры протоколов: {\bfseries L2TP} (Layer 2 Tunneling Protocol), {\bfseries NetBIOS} (Network Basic Input Output System), {\bfseries PAP} (Password Authentication Protocol), {\bfseries PPTP} (Point-to-Point Tunneling Protocol), {\bfseries RPC} (Remote Procedure Call Protocol).
+
+\subsection{Транспртный уровень (transport layer)}
+
+Основные функции:
+\begin{itemize}
+	\item Обеспечивает надёжную доставку данных, подтверждение приёма и сегментацию потока, получаемого от транспортного уровня
+\end{itemize}
+
+Примеры протоколов: {\bfseries TCP} (Transmission Control Protocol), {\bfseries UDP} (User Datagramm Protocol).
+
+\subsection{Сетевой уровень (network layer)} 
+
+Основные задачи:
+\begin{itemize}
+	\item Решает задачу доставки данных по составной сети, межсетевую адресацию, трансляцию физических адресов в сетевые.
+\end{itemize}
+
+Примеры протоколов: {\bfseries IP/IPv4/IPv6} (Internet Protocol), {\bfseries IPX} (Internetwork Packet Exchange), {\bfseries IPsec} (Internet Protocol Security), {\bfseries ICMP} (Internet Control Message Protocol), {\bfseries RIP} (Routing Information Protocol), {\bfseries OSPF} (Open Shortest Path First), {\bfseries ARP} (Address Resolution Protocol).
+
+\subsection{Канальный уровень (data link layer)}
+
+Основные задачи:
+\begin{itemize}
+	\item Обеспечивает формирование фреймов (frames) --- кадров
+	\item Обеспечиват контроль ошибок и управление потоком данных (data flow control)
+	\item Логическое кодирование данных
+\end{itemize}
+
+Примеры протоколов: {\bfseries ATM}, {\bfseries Ethernet}, {\bfseries EAPS} (Ethernet Automatic Protection Switching), {\bfseries FDDI} (Fiber Distributed Data Interface), {\bfseries MPLS} (Multiprotocol Label Switching), {\bfseries PPP} (Point-to-Point Protocol), {\bfseries SLIP} (Serial Line Internet Protocol).
+
+\subsection{Физичиеский уровень (physical layer)}
+
+Основные функции:
+\begin{itemize}
+	\item Обеспечивает физическое кодирование бит кадра в электрические (оптические) сигналы и передачу их по линии связи
+	\item Определяет тип кабалей и разъёмов, назначение контактов и формат физических сигналов
+\end{itemize}
+
+Примеры протоколов: {\bfseries IEEE 802.15} (Bluetooth), {\bfseries IRDA}, {\bfseries EIA-RS-232}, {\bfseries EIA-422}, {\bfseries Ethernet}, {\bfseries DSL}, {\bfseries ISDN}, {\bfseries IEEE 802.11}.
+
+\subsection{Взаимодествие сетевого канального уровня}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.4\linewidth]{pictures/NetToLink}
+	\caption[Взаимодействие сетевого и канального уровня]{}
+	\label{fig:nettolink}
+\end{figure}
+
+Замечания:
+\begin{itemize}
+	\item В сетях 1 и 3 есть узлы с одинаковыми адресами канального уровня. Это возможно, так как область действия адресации канального уровня --- локальная сеть.
+	\item В составной сети адреса сетевого уровня из одной локальной сети должны иметь одинаковую сетевую часть. Это нужно для решения задачи маршрутизации.
+	\item В составной сети адреса сетевого уровня должны быть уникальными.
+	\item За счет процедуры инкапсуляции межсетвое взаимодействие не зависит от природы канальных протоколов в локальных сетях.
+\end{itemize}
+
+\chapter{Lecture 2}
+
+\section{Физический и канальный уровни корпоративных сетей}
+
+\subsubsection{Стркутурированные кабельные системы} % (fold)
+
+\section{Соединение IP сетей}
+
+\subsection{Виды маршрутизации}
+
+Маршрутизацию можно классифицировать двумя способами:
+\begin{itemize}
+	\item Статическая и динамическая
+	\item Внешняя и внутренняя
+\end{itemize}
+
+Внешняя необходима для маршрутизации между автономными системами (EGP, BGP).
+
+Внутрення --- внутри одной системы (RIP, OSPF).
+
+OSPF -- открытие кратчайшего пути первым. Информации включения/отключения сетей пересылается сразу, по мере появления. По этой информации строится нагруженный граф сети (веса назначаются по таблице в зависимости от скорости линии связи). Маршрут считается по алгоритму Дириха. Быстрее получаем маршрутную информацию, понимаем скорости и быстро перестраиваем при ищменении конфигурации. Но его гораздо сложнее настраивать. 
+
+Сеть в маршрутизации описывается в виде табоицы маршрутизации. 
+
+В TCP/IP мы занимаемся каждым отдельным пакетом. В этом есть минус, так как обычно все пакеты дают один и тот же пакет.
+
+Таблицы маршрутизации строит либо админ, либо протокол маршрутизации. 
+
+\subsection{NAT (Network Address Translation)}
+
+Основная причина появления --- постоянная нехватка IP адресов.
+
+Не всем хостам нужен IP адрес, а использовать маршуртизацию нельзя.
+
+Цель: обеспечить связь хостов из немаршуртизуемой сети во внешнюю IP сеть.
+
+Виды:
+\begin{itemize}
+	\item Публикация адреса
+	\item Клиентский NAT
+	\item Публикация порта
+\end{itemize}
+
+\subsubsection{Публикация адреса}
+
+Когда: Вы - провайдер домашнего интернета. И один из пользователей вашей сети захотел себе NAS (Network Attached Storage --- компьютер с диском, к которому мы ходим из разных мест по разным протоколам), ему нужен реальный IP адрес. Вариант с разделением всей сети масками очень сложен и плох. Поэтому мы делаем подстановку: маршуртизатор провайдера, когда получает пакет на реальный адрес, то меняет его на локальный и посылает по сети, обратно наоборот. Но эта схема работает только, если используется один алрес, для большего количества не работает.
+
+%картинка
+
+\subsubsection{Клиентский NAT}
+
+%картинка
+
+
+Плюсы: любое количество хостов можем выпустить наружу в интернет через один IP адрес.
+
+\subsubsection{Публикация порта}
+
+Теперь можно из интернета попасть на устройство. Нам нужен лишь один IP адрес. И обратившись на опубликованный сокет мы попадем на нужное кстройство. 
+
+\end{document}
