@@ -1,0 +1,73 @@
+\documentclass[10pt,a4paper,oneside,titlepage]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{cmll}
+\usepackage{enumerate}
+\usepackage{stmaryrd}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm,bindingoffset=0cm]{geometry}
+\usepackage{url}
+\usepackage{multicol}
+\usepackage{listingsutf8}
+\usepackage{graphicx}
+\graphicspath{{pictures/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+\lstset{%
+	numbers = left
+}
+
+\title{Конспект по курсу Сети \thanks{Читаемый  в 2019-2020 годах}}
+\author{Александра Лисицына \thanks{Студентка группы М3435}}
+
+\theoremstyle{defenition}
+\newtheorem*{defenition}{Определение}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\clearpage	
+
+\chapter{Рефакторинг}
+
+\begin{defenition}
+	Рефакторинг --- процесс изменения внутренней структуры программы, не затрагивающей ее внешнего поведения и имеющий целью облегчить понимание ее работы.
+\end{defenition}
+
+\begin{itemize}
+	\item Цель рефакторинга --- заплатить технической долг.
+	\item Результат рефакторинга --- чистый код и простой дизайн.
+\end{itemize}
+
+\section{Как стоит применять рефакторинг}
+
+\begin{itemize}
+	\item Серия небольших изменений
+	\item Каждое исправляет какой-то один эффект
+	\item Не добавляется никакой новой функциональности
+	\item Все тесты проходят после каждого изменения
+	\item Код становится проще и понятней после рефакторинга
+\end{itemize}
+
+\section{Когда стоит применять рефакторинг}
+
+\begin{itemize}
+	\item Правило трех ударов
+	\begin{itemize}
+		\item Первый раз вы просто пишете код
+		\item Второй раз морщитесь от необходимости делать что-то похожее, но все пишете код
+		\item На третий раз вы добавляете рефакторинг 
+	\end{itemize}
+    \item Когда добавляете новую функциональность
+    \begin{itemize}
+    	\item В процессе рефакторинга вы лучше понимаете существующий код и улучшаете его
+    	\item После рефакторинга новый фичи добавлять проще
+    \end{itemize}
+\end{itemize}
+
+\end{document}
